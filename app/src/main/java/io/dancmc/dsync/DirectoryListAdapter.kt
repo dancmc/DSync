@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.adapter_directorylist.view.*
@@ -12,7 +11,7 @@ import org.jetbrains.anko.sdk27.coroutines.onClick
 
 
 // Adapter for the list of bluetooth devices in BluetoothSubFragment
-class DirectoryListAdapter(private val context: Context?, var dataset: ArrayList<ImageDirectory>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class DirectoryListAdapter(private val context: Context?, var dataset: ArrayList<MediaDirectory>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var listener :DirectoryListAdapter.Listener?=null
 
 
@@ -37,9 +36,9 @@ class DirectoryListAdapter(private val context: Context?, var dataset: ArrayList
             listener?.onClick(item)
         }
 
-        Glide.with(context!!).load(item.displayPhoto).into(holder.image)
+        Glide.with(context!!).load(item.displayItem).into(holder.image)
         holder.name.text = item.albumName
-        holder.number.text = item.numPhotos.toString()
+        holder.number.text = item.numItems.toString()
 
     }
 
@@ -48,7 +47,7 @@ class DirectoryListAdapter(private val context: Context?, var dataset: ArrayList
     }
 
     interface Listener{
-        fun onClick(directory:ImageDirectory)
+        fun onClick(directory:MediaDirectory)
     }
 
 }

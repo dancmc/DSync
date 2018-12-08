@@ -28,8 +28,8 @@ class HomeMainFragment : BaseMainFragment() {
     }
 
     lateinit var manager: FragmentManager
-    var directoryList = ArrayList<ImageDirectory>()
-    var photoList = ArrayList<PhotoObj>()
+    var directoryList = ArrayList<MediaDirectory>()
+    var photoList = ArrayList<MediaObj>()
     lateinit var layout: View
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -69,7 +69,7 @@ class HomeMainFragment : BaseMainFragment() {
 
     fun setup() {
         doAsync {
-            directoryList = Utils.getImageDirectories(context)
+            directoryList = Utils.getMediaDirectories(context)
             photoList = Utils.refreshPhotoList(context!!, directoryList)
 
             uiThread {

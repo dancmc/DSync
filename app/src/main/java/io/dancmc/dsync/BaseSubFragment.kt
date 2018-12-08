@@ -10,7 +10,7 @@ open class BaseSubFragment: Fragment(){
 
     }
 
-    open fun photosLoaded(imageDirectory: ArrayList<ImageDirectory>, photoList:ArrayList<PhotoObj>){
+    open fun photosLoaded(imageDirectory: ArrayList<MediaDirectory>, photoList:ArrayList<MediaObj>){
 
     }
 

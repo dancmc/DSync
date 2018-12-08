@@ -29,6 +29,7 @@ class MyApplication : Application() {
         super.onCreate()
 
         Realm.init(this)
+        Prefs.init(this)
 
         val config = RealmConfiguration.Builder().build()
         Realm.setDefaultConfiguration(config)

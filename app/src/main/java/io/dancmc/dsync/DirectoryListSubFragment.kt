@@ -76,7 +76,7 @@ class DirectoryListSubFragment : BaseSubFragment() {
 
         // initialise cursorAdapter with the item list, attach cursorAdapter to recyclerview
         // list initially empty
-        adapter = DirectoryListAdapter(activity!!, ArrayList<ImageDirectory>())
+        adapter = DirectoryListAdapter(activity!!, ArrayList<MediaDirectory>())
         recyclerView.adapter = adapter
 
 
@@ -95,7 +95,7 @@ class DirectoryListSubFragment : BaseSubFragment() {
     }
 
 
-    override fun photosLoaded(imageDirectory: ArrayList<ImageDirectory>, photoList: ArrayList<PhotoObj>) {
+    override fun photosLoaded(imageDirectory: ArrayList<MediaDirectory>, photoList: ArrayList<MediaObj>) {
         adapter.dataset.clear()
         adapter.dataset.addAll(imageDirectory)
         adapter.notifyDataSetChanged()

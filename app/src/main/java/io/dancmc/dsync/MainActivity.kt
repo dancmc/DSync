@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -16,13 +17,18 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.javadocmd.simplelatlng.LatLng
 import io.nlopez.smartlocation.OnLocationUpdatedListener
 import io.nlopez.smartlocation.SmartLocation
+import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.android.UI
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        private val TAG = "MAINACTIVITY"
         private val TAG_HOME = "home"
         private val TAG_BACKUP = "backup"
         private val TAG_SETTINGS = "settings"
@@ -48,20 +54,56 @@ class MainActivity : AppCompatActivity() {
         }
         navigation.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
 
-        if (savedInstanceState != null) {
-            currentFragment = savedInstanceState.getString("currentFragment")
-        } else {
-            switchFragment(TAG_HOME)
-        }
-
-
-
-
+        initialiseAndAuthorise(savedInstanceState)
 
     }
 
 
+    // switch to hardcoded backup server in case of failure
+    private fun initialiseAndAuthorise(savedInstanceState: Bundle?) {
+        if (Prefs.instance!!.readString(Prefs.JWT, "").isBlank()) {
+            logout()
+        } else {
+            if (savedInstanceState != null) {
+                currentFragment = savedInstanceState.getString("currentFragment")
+            } else {
+                switchFragment(TAG_HOME)
+            }
 
+//            Utils.updateDetails(this,
+//                    success = {},
+//                    failure = { responseJson ->
+//                        if (responseJson?.optInt("error_code", -1) ?: 0 == 0) {
+//                            logout()
+//                        }
+//                    },
+//                    networkFailure = { code ->
+//                        if (code == 502) {
+//                            when (PhotoRetrofit.domain) {
+//                                "dancmc.io" -> {
+//                                    PhotoRetrofit.domain = "danielchan.io"
+//                                    PhotoRetrofit.rebuild()
+//                                    toast("Switching to backup server")
+//                                    initialiseAndAuthorise(savedInstanceState)
+//                                }
+//                                "danielchan.io" -> {
+//                                    toast("Both servers down")
+//                                }
+//                            }
+//                        }
+//                    })
+        }
+    }
+
+
+    fun logout() {
+        Prefs.instance!!.writeString(Prefs.JWT, "")
+        Prefs.instance!!.writeString(Prefs.USER_ID, "")
+        Prefs.instance!!.writeString(Prefs.USERNAME, "")
+        val loginIntent = Intent(this, LoginActivity::class.java)
+        startActivity(loginIntent)
+        finish()
+    }
 
 
     // Listener for BottomNavigationView
