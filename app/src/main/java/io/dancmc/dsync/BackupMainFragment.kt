@@ -14,7 +14,7 @@ import org.jetbrains.anko.toast
 import org.json.JSONObject
 
 
-class BackupMainFragment : BaseMainFragment() {
+class BackupMainFragment : BaseMainFragment(), BackupSummarySubFragment.BackupSummaryInterface, IndexSubFragment.IndexInterface {
 
     companion object {
 
@@ -40,11 +40,10 @@ class BackupMainFragment : BaseMainFragment() {
     internal inner class IncomingHandler : Handler() {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                IndexService.INDEX_PERCENT, IndexService.INDEX_FINISHED-> {
+                IndexService.PING_RUNNING->activity?.toast(msg.obj.toString())
+                else -> {
                     (childFragmentManager.findFragmentById(R.id.fragment_overall_container) as? IndexServiceComm)?.messageReceived(msg.what, msg.obj)
                 }
-                IndexService.PING_RUNNING->activity?.toast(msg.obj.toString())
-                else -> super.handleMessage(msg)
             }
         }
     }
@@ -85,10 +84,11 @@ class BackupMainFragment : BaseMainFragment() {
             val tx = manager.beginTransaction()
 
             if(System.currentTimeMillis() - Prefs.instance!!.readLong(Prefs.INDEX_LAST_UPDATED, 0)> dayInMs){
-                val feedFrag = IndexSubFragment.newInstance()
-                tx.add(R.id.fragment_overall_container, feedFrag, null)
+                val indexFrag = IndexSubFragment.newInstance()
+                tx.add(R.id.fragment_overall_container, indexFrag, null)
             }else {
-
+                val backupFrag = BackupSummarySubFragment.newInstance()
+                tx.add(R.id.fragment_overall_container, backupFrag, null)
             }
 
             tx.commit()
@@ -108,6 +108,8 @@ class BackupMainFragment : BaseMainFragment() {
 //            }
 
         }
+
+
 
         return layout
     }
@@ -130,7 +132,41 @@ class BackupMainFragment : BaseMainFragment() {
     }
 
 
-    interface IndexServiceComm{
-        fun messageReceived(message:Int, obj:Any)
+    override fun goToIndex() {
+        val tx = manager.beginTransaction()
+        val indexFrag = IndexSubFragment.newInstance()
+        tx.replace(R.id.fragment_overall_container, indexFrag, null)
+        tx.commit()
+    }
+
+    override fun goToBackup() {
+        val tx = manager.beginTransaction()
+        val indexFrag = BackupSummarySubFragment.newInstance()
+        tx.replace(R.id.fragment_overall_container, indexFrag, null)
+        tx.commit()
+    }
+
+    override fun loadOnPhone() {
+        val tx = manager.beginTransaction()
+        val indexFrag = BackupListSubFragment.newInstance(BackupSummarySubFragment.ON_PHONE)
+        tx.replace(R.id.fragment_overall_container, indexFrag, null)
+        tx.addToBackStack(null)
+        tx.commit()
+    }
+
+    override fun loadOnServer() {
+        val tx = manager.beginTransaction()
+        val indexFrag = BackupListSubFragment.newInstance(BackupSummarySubFragment.ON_SERVER)
+        tx.replace(R.id.fragment_overall_container, indexFrag, null)
+        tx.addToBackStack(null)
+        tx.commit()
+    }
+
+    override fun loadToSync() {
+        val tx = manager.beginTransaction()
+        val indexFrag = BackupListSubFragment.newInstance(BackupSummarySubFragment.TO_SYNC)
+        tx.replace(R.id.fragment_overall_container, indexFrag, null)
+        tx.addToBackStack(null)
+        tx.commit()
     }
 }

@@ -19,7 +19,7 @@ open class RealmMedia : RealmObject(){
     var latitude = 0.0
     var mime = ""
     var isVideo = false
-    var uploadDenied = false
+    var dateTaken = 0L
 
 
 }

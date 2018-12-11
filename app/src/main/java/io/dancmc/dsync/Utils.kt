@@ -231,6 +231,9 @@ class Utils {
                     // Photo already exists in database, just need to add new filepath
                     if (realmPhoto != null && realmPhoto.bytes == bytes) {
                         realmPhoto.fileinfo.add(fileinfo)
+                        if(realmPhoto.dateTaken>photo.dateTaken){
+                            realmPhoto.dateTaken = photo.dateTaken
+                        }
                     } else {
                         realmPhoto = RealmMedia()
                         realmPhoto.uuid = UUID.randomUUID().toString()
@@ -241,6 +244,7 @@ class Utils {
                         realmPhoto.longitude = photo.longitude
                         realmPhoto.mime = photo.mime
                         realmPhoto.isVideo = photo.isVideo
+                        realmPhoto.dateTaken = photo.dateTaken
                         realm.copyToRealm(realmPhoto)
                     }
                 } else {
@@ -258,9 +262,7 @@ class Utils {
                 }
 
                 counter++
-                if (counter % 100 == 0) {
                     progress(counter/photos.size.toDouble()*100.0)
-                }
             }
 
             realm.commitTransaction()

@@ -3,20 +3,13 @@
 
     <!-- Define the background properties like color etc -->
 
-    <!--<item android:id="@android:id/background">-->
-        <!--<clip>-->
-            <!--<shape>-->
-                <!--<solid android:color="@color/white" />-->
-            <!--</shape>-->
-        <!--</clip>-->
-    <!--</item>-->
     <item android:drawable="@drawable/rectangle_rounded"/>
     <!-- Define the progress properties like start color, end color etc -->
     <item android:id="@android:id/progress">
         <clip>
             <shape>
                 <corners android:radius="4dp"/>
-                <solid android:color="@android:color/holo_green_dark" />
+                <solid android:color="@android:color/holo_blue_light" />
             </shape>
         </clip>
     </item>

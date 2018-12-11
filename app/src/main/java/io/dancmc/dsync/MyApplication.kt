@@ -30,6 +30,7 @@ class MyApplication : Application() {
 
         Realm.init(this)
         Prefs.init(this)
+        GlideHeader.setAuthorization(Prefs.instance!!.readString(Prefs.JWT,""))
 
         val config = RealmConfiguration.Builder().build()
         Realm.setDefaultConfiguration(config)

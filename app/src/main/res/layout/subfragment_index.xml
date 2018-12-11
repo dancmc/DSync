@@ -1,39 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:orientation="vertical"
-              android:background="@color/white"
-              android:layout_width="match_parent"
-
-              android:layout_height="match_parent">
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/subfragment_index_toolbar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:elevation="4dp"
         android:background="@color/offwhite"
+        android:elevation="4dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="@string/app_name"
-        app:popupTheme="@style/OverflowMenu"/>
+        app:popupTheme="@style/OverflowMenu"
+        app:title="@string/app_name"/>
 
     <TextView
         android:id="@+id/subfragment_index_last_updated"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
         android:layout_marginTop="16dp"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/subfragment_index_toolbar"
         />
+
+    <TextView
+        android:id="@+id/subfragment_index_progress_index_label"
+        android:layout_width="96dp"
+        android:layout_height="32dp"
+        android:layout_marginLeft="24dp"
+        android:gravity="center_vertical"
+        android:text="Indexing"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/subfragment_index_last_updated"/>
+
     <ProgressBar
         android:id="@+id/subfragment_index_progress_index"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_marginTop="16dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="16dp"
+        android:indeterminate="false"
         android:max="100"
         android:progressDrawable="@drawable/progress_bar_green"
-        android:indeterminate="false"/>
+        app:layout_constraintBottom_toBottomOf="@id/subfragment_index_progress_index_label"
+        app:layout_constraintLeft_toRightOf="@id/subfragment_index_progress_index_label"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/subfragment_index_progress_index_label"
+        tools:progress="40"/>
+
+    <TextView
+        android:id="@+id/subfragment_index_progress_index_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/subfragment_index_progress_index"
+        app:layout_constraintBottom_toBottomOf="@id/subfragment_index_progress_index"
+        app:layout_constraintLeft_toLeftOf="@id/subfragment_index_progress_index"
+        app:layout_constraintRight_toRightOf="@id/subfragment_index_progress_index"
+        tools:text="40%"/>
+
+    <TextView
+        android:id="@+id/subfragment_index_pulling_label"
+        android:layout_width="96dp"
+        android:layout_height="32dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:text="Pulling"
+        android:textSize="16sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/subfragment_index_progress_index_label"/>
+
+    <ImageView
+        android:id="@+id/subfragment_index_pulling_tick"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="16dp"
+        android:src="@drawable/circle_selector"
+        app:layout_constraintBottom_toBottomOf="@id/subfragment_index_pulling_label"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintLeft_toRightOf="@id/subfragment_index_pulling_label"
+        app:layout_constraintTop_toTopOf="@id/subfragment_index_pulling_label"/>
 
 
+    <TextView
+        android:id="@+id/subfragment_index_progress_compare_label"
+        android:layout_width="96dp"
+        android:layout_height="32dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:text="Comparing"
+        android:textSize="16sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/subfragment_index_pulling_label"/>
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/subfragment_index_progress_compare"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="16dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progressDrawable="@drawable/progress_bar_blue"
+        app:layout_constraintBottom_toBottomOf="@id/subfragment_index_progress_compare_label"
+        app:layout_constraintLeft_toRightOf="@id/subfragment_index_progress_compare_label"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/subfragment_index_progress_compare_label"
+        tools:progress="40"/>
+
+    <TextView
+        android:id="@+id/subfragment_index_progress_compare_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/subfragment_index_progress_compare"
+        app:layout_constraintBottom_toBottomOf="@id/subfragment_index_progress_compare"
+        app:layout_constraintLeft_toLeftOf="@id/subfragment_index_progress_compare"
+        app:layout_constraintRight_toRightOf="@id/subfragment_index_progress_compare"
+        tools:text="40%"/>
+
+    <Button
+        android:id="@+id/subfragment_index_button_done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Done"
+        android:layout_marginTop="32dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+
+        app:layout_constraintTop_toBottomOf="@id/subfragment_index_progress_compare"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

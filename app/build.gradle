@@ -43,6 +43,9 @@ dependencies {
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '0.26.0'
     implementation 'androidx.core:core-ktx:1.0.0'
     implementation "org.jetbrains.anko:anko:$anko_version"
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
+
+
 
     implementation 'io.nlopez.smartlocation:library:3.3.3'
 }

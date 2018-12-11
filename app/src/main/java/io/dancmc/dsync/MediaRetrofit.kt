@@ -51,6 +51,10 @@ class MediaRetrofit {
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
         }
+
+        fun getPhotoThumbUrl(uuid:String):String{
+            return getApiUrl()+"static/photos?id=$uuid&size=thumb"
+        }
     }
 
 
@@ -72,5 +76,7 @@ class MediaRetrofit {
         @POST("photo/upload")
         fun photoUpload(@Part("photo") file:RequestBody, @Part("json") json:RequestBody): Call<String>
 
+        @GET("static/photos")
+        fun downloadPhoto(@QueryMap queries:HashMap<String, String>): Call<String>
     }
 }
