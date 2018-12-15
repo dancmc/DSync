@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:background="@color/white"
+              android:layout_width="match_parent"
+
+              android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/subfragment_photo_viewer_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:elevation="4dp"
+        android:background="@color/offwhite"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/app_name"
+        app:popupTheme="@style/OverflowMenu"/>
+
+    <ImageView
+        android:id="@+id/subfragment_photo_viewer_image"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintHorizontal_weight="0.5"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/subfragment_photo_viewer_info"
+        app:layout_constraintTop_toBottomOf="@id/subfragment_photo_viewer_toolbar"/>
+
+    <LinearLayout
+        android:id="@+id/subfragment_photo_viewer_info"
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        app:layout_constraintLeft_toRightOf="@id/subfragment_photo_viewer_image"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_weight="0.5"
+        app:layout_constraintTop_toTopOf="@id/subfragment_photo_viewer_image"
+        app:layout_constraintBottom_toBottomOf="@id/subfragment_photo_viewer_image"
+        android:layout_height="0dp">
+
+        <TextView
+            android:id="@+id/subfragment_photo_viewer_folder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/subfragment_photo_viewer_filepath"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/subfragment_photo_viewer_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="4dp"/>
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/subfragment_photo_viewer_notes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@id/subfragment_photo_viewer_image"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

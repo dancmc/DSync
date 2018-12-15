@@ -34,6 +34,8 @@ class Prefs private constructor(context: Context) {
         var CAMERA_FRONT_WIDTH = "camera_front_width"
         var CAMERA_FRONT_HEIGHT = "camera_front_height"
 
+        val API_URL = "api_url"
+
         var instance: Prefs? = null
             private set
 

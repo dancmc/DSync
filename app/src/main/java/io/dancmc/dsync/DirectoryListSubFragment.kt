@@ -30,6 +30,9 @@ class DirectoryListSubFragment : BaseSubFragment() {
     lateinit var layout: View
     lateinit var realm: Realm
 
+    var imageDirectoryList = ArrayList<MediaDirectory>()
+    var photoList =  ArrayList<MediaObj>()
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -77,6 +80,12 @@ class DirectoryListSubFragment : BaseSubFragment() {
         // initialise cursorAdapter with the item list, attach cursorAdapter to recyclerview
         // list initially empty
         adapter = DirectoryListAdapter(activity!!, ArrayList<MediaDirectory>())
+        adapter.dataset = imageDirectoryList
+        adapter.listener = object:DirectoryListAdapter.Listener{
+            override fun onClick(directory: MediaDirectory) {
+                (parentFragment as? DirectoryListInterface)?.directoryClicked(directory)
+            }
+        }
         recyclerView.adapter = adapter
 
 
@@ -96,9 +105,10 @@ class DirectoryListSubFragment : BaseSubFragment() {
 
 
     override fun photosLoaded(imageDirectory: ArrayList<MediaDirectory>, photoList: ArrayList<MediaObj>) {
-        adapter.dataset.clear()
-        adapter.dataset.addAll(imageDirectory)
+        imageDirectoryList.clear()
+        imageDirectoryList.addAll(imageDirectory)
         adapter.notifyDataSetChanged()
+        this.photoList = photoList
     }
 
 
@@ -107,5 +117,8 @@ class DirectoryListSubFragment : BaseSubFragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    interface DirectoryListInterface{
+        fun directoryClicked(directory:MediaDirectory)
+    }
 
 }

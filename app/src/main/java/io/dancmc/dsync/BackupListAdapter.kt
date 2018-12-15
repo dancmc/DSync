@@ -17,7 +17,8 @@ import java.io.File
 
 
 // Adapter for the list of bluetooth devices in BluetoothSubFragment
-class BackupListAdapter(var context: Context, var type:String, var dataset: List<RealmDifference>, var checkListener:(RealmDifference,Boolean)->Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class BackupListAdapter(var context: Context, var type:String, var dataset: List<RealmDifference>,
+                        var checkListener:(RealmDifference,Boolean)->Unit, var deleteCheckListener:(RealmDifference,Boolean)->Unit={_,_->}) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
     inner class Holder(v: View) : RecyclerView.ViewHolder(v) {
@@ -25,6 +26,7 @@ class BackupListAdapter(var context: Context, var type:String, var dataset: List
         val folder = v.adapter_backup_list_folder
         val filepath = v.adapter_backup_list_filepath
         val checkbox = v.adapter_backup_list_checkbox
+        val deleteCheckbox = v.adapter_backup_list_checkbox_delete
     }
 
 
@@ -52,9 +54,14 @@ class BackupListAdapter(var context: Context, var type:String, var dataset: List
             val requestOptions = RequestOptions().signature(ObjectKey(System.currentTimeMillis()))
             Glide.with(context).load(GlideHeader.getUrlWithHeaders(MediaRetrofit.getPhotoThumbUrl(item.uuid))).apply(requestOptions).into(holder.image)
             holder.filepath.text = item.filepaths.joinToString()
+            holder.deleteCheckbox.isChecked = item.deleteOffServer
+            holder.deleteCheckbox.onClick {
+                deleteCheckListener.invoke(item, holder.deleteCheckbox.isChecked)
+            }
         } else {
             Glide.with(context).load(item.filepaths[0]).into(holder.image)
             holder.filepath.text = item.filepaths.map { File(it).name }.joinToString()
+            holder.deleteCheckbox.visibility = View.GONE
         }
 
     }

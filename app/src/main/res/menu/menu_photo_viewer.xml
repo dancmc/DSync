@@ -2,14 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/action_backup"
-        android:title="Backup"
-        app:showAsAction="always"/>
+
 
     <item
-        android:id="@+id/action_index"
-        android:title="Index"
+        android:id="@+id/action_save"
+        android:title="Save"
         app:showAsAction="always"/>
 
 

@@ -5,6 +5,8 @@ import android.util.Log
 import android.widget.Toast
 import okhttp3.MediaType
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Call
@@ -54,48 +56,130 @@ object MediaApi {
         return MediaRetrofit.api.userLogin(json.toString())
     }
 
+    fun uploadPhoto(mediaobj:RealmMedia): Call<String> {
+
+        val jsonObject = JSONObject()
+        try {
+            jsonObject.put("md5", mediaobj.md5)
+            jsonObject.put("bytes", mediaobj.bytes)
+
+            val fileArray = JSONArray()
+            mediaobj.fileinfo.forEach {
+                val fileObj = JSONObject()
+                val file = File(it.filepath)
+                println(it.filepath)
+                fileObj.put("folderpath", file.parentFile.path)
+                fileObj.put("filename", file.name)
+                fileArray.put(fileObj)
+            }
+            jsonObject.put("folders", fileArray)
+
+            val tagArray = JSONArray()
+            mediaobj.tags.forEach {
+                tagArray.put(it)
+            }
+            jsonObject.put("tags", tagArray)
+
+            jsonObject.put("notes", mediaobj.notes)
+            jsonObject.put("notes_updated", mediaobj.notesUpdated)
+            jsonObject.put("tags_updated", mediaobj.tagsUpdated)
+            jsonObject.put("mime", mediaobj.mime)
+            jsonObject.put("is_video", mediaobj.isVideo)
+            jsonObject.put("date_taken", mediaobj.dateTaken)
+
+        } catch (j: JSONException) {
+            Log.d(TAG, j.message)
+        }
+
+        val photo = RequestBody.create(MediaType.parse("multipart/form-data"), File(mediaobj.fileinfo[0]!!.filepath))
+        //        MultipartBody.Part photo = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
+        val jsonBody = RequestBody.create(MediaType.parse("multipart/form-data"), jsonObject.toString())
+
+        return MediaRetrofit.api.photoUpload(photo, jsonBody)
+    }
+
     fun validate(): Call<String> {
         return MediaRetrofit.api.validate()
     }
 
-    fun getComplete(deleted:Boolean=true): Call<String> {
+    fun getComplete(deleted:Boolean=false): Call<String> {
         val queryMap = HashMap<String, String>()
         queryMap["deleted"] = deleted.toString()
 
         return MediaRetrofit.api.getComplete(queryMap)
     }
 
+    fun downloadPhoto(uuid:String, size:String): Call<ResponseBody> {
+        val queryMap = HashMap<String, String>()
+        queryMap["id"] = uuid
+        queryMap["size"] = size
 
+        return MediaRetrofit.api.downloadPhoto(queryMap)
+    }
 
-    fun uploadPhoto(file: File, caption: String,
-                    latitude: Double?, longitude: Double?, locationName: String?): Call<String> {
+    fun deletePhoto(photoIDs:ArrayList<String>): Call<String> {
 
-        val jsonObject = JSONObject()
+        val json = JSONObject()
         try {
-            jsonObject.put("caption", caption)
-            if (latitude != null) {
-                jsonObject.put("latitude", latitude)
-            }
-            if (longitude != null) {
-                jsonObject.put("longitude", longitude)
-            }
-            if (locationName != null) {
-                jsonObject.put("location_name", locationName)
+            val array = JSONArray()
+            json.put("photos", array)
+            photoIDs.forEach {
+                array.put(it)
             }
         } catch (j: JSONException) {
             Log.d(TAG, j.message)
         }
 
-        val photo = RequestBody.create(MediaType.parse("multipart/form-data"), file)
-        //        MultipartBody.Part photo = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
-
-        val jsonBody = RequestBody.create(MediaType.parse("multipart/form-data"), jsonObject.toString())
-
-        return MediaRetrofit.api.photoUpload(photo, jsonBody)
+        return MediaRetrofit.api.deletePhoto(json.toString())
     }
 
+    fun editMetadata(photos:List<RealmMedia>): Call<String> {
 
+        val json = JSONObject()
 
+        try {
+            val photoArray = JSONArray()
+            json.put("photos", photoArray)
+
+            photos.forEach {mediaobj->
+                val photoObj = JSONObject()
+                photoObj.put("photo_id", mediaobj.uuid)
+
+                val fileArray = JSONArray()
+                mediaobj.fileinfo.forEach {
+                    val fileObj = JSONObject()
+                    val file = File(it.filepath)
+                    fileObj.put("folderpath", file.parentFile.name)
+                    fileObj.put("filename", file.name)
+                    fileArray.put(fileObj)
+                }
+                photoObj.put("folders", fileArray)
+
+                val tagArray = JSONArray()
+                mediaobj.tags.forEach {
+                    tagArray.put(it)
+                }
+                photoObj.put("tags", tagArray)
+
+                photoObj.put("notes", mediaobj.notes)
+                photoObj.put("notes_updated", mediaobj.notesUpdated)
+                photoObj.put("tags_updated", mediaobj.tagsUpdated)
+
+            }
+
+        } catch (j: JSONException) {
+            Log.d(TAG, j.message)
+        }
+
+        return MediaRetrofit.api.editMetadata(json.toString())
+    }
+
+    fun getMetadata(uuid:String): Call<String> {
+        val queryMap = HashMap<String, String>()
+        queryMap["photo_id"] = uuid
+
+        return MediaRetrofit.api.getMetadata(queryMap)
+    }
 
     fun generateCallback(context: Context, apiCallback: MediaApiCallback): Callback<String> {
         return object : Callback<String> {

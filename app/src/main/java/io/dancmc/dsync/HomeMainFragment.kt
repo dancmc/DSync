@@ -8,12 +8,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
+import io.realm.Realm
+import kotlinx.android.synthetic.main.subfragment_photo_viewer.view.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import java.io.File
 import java.util.*
 
 
-class HomeMainFragment : BaseMainFragment() {
+class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryListInterface, GallerySubFragment.GalleryInterface, PhotoViewerSubFragment.PhotoViewerInterface {
 
     companion object {
 
@@ -31,6 +34,7 @@ class HomeMainFragment : BaseMainFragment() {
     var directoryList = ArrayList<MediaDirectory>()
     var photoList = ArrayList<MediaObj>()
     lateinit var layout: View
+    lateinit var realm:Realm
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -62,6 +66,7 @@ class HomeMainFragment : BaseMainFragment() {
 
                 }
             }
+            realm = Realm.getDefaultInstance()
 
         }
         return layout
@@ -92,4 +97,34 @@ class HomeMainFragment : BaseMainFragment() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        realm.close()
+    }
+
+    override fun directoryClicked(directory: MediaDirectory) {
+        val tx = manager.beginTransaction()
+        val galleryFrag = GallerySubFragment.newInstance()
+        val list = if(directory.albumName=="All") photoList else photoList.filter { it.bucketID == directory.id }
+        galleryFrag.list = list
+        tx.add(R.id.fragment_overall_container, galleryFrag, null)
+        tx.addToBackStack(null)
+        tx.commit()
+    }
+
+    override fun photoClicked(photo: MediaObj) {
+        val tx = manager.beginTransaction()
+        val photoviewer = PhotoViewerSubFragment.newInstance()
+        photoviewer.mediaObj = photo
+        tx.add(R.id.fragment_overall_container, photoviewer, null)
+        tx.addToBackStack(null)
+        tx.commit()
+    }
+
+    override fun savedPhoto() {
+
+        val tx = manager.beginTransaction()
+        childFragmentManager.popBackStackImmediate()
+        tx.commit()
+    }
 }

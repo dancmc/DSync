@@ -49,9 +49,6 @@ class IndexSubFragment : BaseSubFragment(), IndexServiceComm {
         layout = inflater.inflate(R.layout.subfragment_index, container, false)
         realm = Realm.getDefaultInstance()
 
-        realm.beginTransaction()
-        realm.where(RealmDifference::class.java).equalTo("uuid","sda").findAll().deleteAllFromRealm()
-        realm.commitTransaction()
 
 
         // deal with toolbar

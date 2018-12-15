@@ -59,6 +59,15 @@
         tools:text="Camera"/>
 
     <CheckBox
+        android:id="@+id/adapter_backup_list_checkbox_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        app:layout_constraintEnd_toStartOf="@id/adapter_backup_list_checkbox"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <CheckBox
         android:id="@+id/adapter_backup_list_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

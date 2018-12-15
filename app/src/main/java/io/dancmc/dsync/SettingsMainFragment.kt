@@ -28,9 +28,8 @@ class SettingsMainFragment : BaseMainFragment() {
 
         manager = childFragmentManager
         val tx = manager.beginTransaction()
-//        val feedFrag = FeedSubFragment.newInstance()
-//        feedFrag.clickListeners = this.clickListeners
-//        tx.add(R.id.fragment_overall_container, feedFrag, null)
+        val settingsFrag = SettingsSubFragment.newInstance()
+        tx.add(R.id.fragment_overall_container, settingsFrag, null)
         tx.commit()
 
 

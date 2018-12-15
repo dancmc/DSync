@@ -96,7 +96,7 @@ class Utils {
         }
 
         @JvmStatic
-        fun refreshPhotoList(context: Context, directories:ArrayList<MediaDirectory>): ArrayList<MediaObj> {
+        fun refreshPhotoList(context: Context, directories: ArrayList<MediaDirectory>): ArrayList<MediaObj> {
 
             val directoryMap = HashMap<Int, MediaDirectory>()
             directories.forEach {
@@ -201,78 +201,81 @@ class Utils {
         }
 
         @JvmStatic
-        fun indexPhotos(context: Context, progress:(Double)->Unit) {
+        fun indexPhotos(context: Context, progress: (Double) -> Unit) {
             val photos = refreshPhotoList(context, getMediaDirectories(context))
             val realm = Realm.getDefaultInstance()
 
             var counter = 0
+            try {
+                realm.beginTransaction()
 
-            realm.beginTransaction()
-
-            photos.forEach { photo ->
-                var fileinfo = realm.where(RealmFileInfo::class.java).equalTo("filepath", photo.filepath).findFirst()
-                val associatedPhoto = fileinfo?.photos?.firstOrNull()
-
-
-                if (associatedPhoto == null) {
-                    val file = File(photo.filepath)
-                    val bytes = file.length()
-                    val md5 = MD5.calculateMD5(file)
-                    var realmPhoto = realm.where(RealmMedia::class.java).equalTo("md5", md5).findFirst()
-
-                    // new filepath
-                    if (fileinfo == null) {
-                        fileinfo = RealmFileInfo().apply {
-                            this.filepath = photo.filepath
-                            this.foldername = file.parentFile.name
-                        }
+                photos.forEach { photo ->
+                    if(photo.filepath=="/storage/emulated/0/Pictures/Instagram/IMG_20180927_204844_824.jpg"){
+                        println("hm")
                     }
+                    var fileinfo = realm.where(RealmFileInfo::class.java).equalTo("filepath", photo.filepath).findFirst()
+                    val associatedPhoto = fileinfo?.photos?.firstOrNull()
 
-                    // Photo already exists in database, just need to add new filepath
-                    if (realmPhoto != null && realmPhoto.bytes == bytes) {
-                        realmPhoto.fileinfo.add(fileinfo)
-                        if(realmPhoto.dateTaken>photo.dateTaken){
+
+                    if (associatedPhoto == null) {
+                        val file = File(photo.filepath)
+                        val bytes = file.length()
+                        val md5 = MD5.calculateMD5(file)
+
+                        var realmPhoto = realm.where(RealmMedia::class.java).equalTo("md5", md5).findFirst()
+
+                        // new filepath
+                        if (fileinfo == null) {
+                            fileinfo = RealmFileInfo().apply {
+                                this.filepath = photo.filepath
+                                this.foldername = file.parentFile.name
+                            }
+                        }
+
+                        // Photo already exists in database, just need to add new filepath
+                        if (realmPhoto != null && realmPhoto.bytes == bytes) {
+                            realmPhoto.fileinfo.add(fileinfo)
+                            if (realmPhoto.dateTaken > photo.dateTaken) {
+                                realmPhoto.dateTaken = photo.dateTaken
+                            }
+                        } else {
+                            realmPhoto = RealmMedia()
+                            realmPhoto.uuid = UUID.randomUUID().toString()
+                            realmPhoto.md5 = md5
+                            realmPhoto.bytes = bytes
+                            realmPhoto.fileinfo.add(fileinfo)
+                            realmPhoto.latitude = photo.latitude
+                            realmPhoto.longitude = photo.longitude
+                            realmPhoto.mime = photo.mime
+                            realmPhoto.isVideo = photo.isVideo
                             realmPhoto.dateTaken = photo.dateTaken
+                            realm.copyToRealm(realmPhoto)
                         }
                     } else {
-                        realmPhoto = RealmMedia()
-                        realmPhoto.uuid = UUID.randomUUID().toString()
-                        realmPhoto.md5 = md5
-                        realmPhoto.bytes = bytes
-                        realmPhoto.fileinfo.add(fileinfo)
-                        realmPhoto.latitude = photo.latitude
-                        realmPhoto.longitude = photo.longitude
-                        realmPhoto.mime = photo.mime
-                        realmPhoto.isVideo = photo.isVideo
-                        realmPhoto.dateTaken = photo.dateTaken
-                        realm.copyToRealm(realmPhoto)
-                    }
-                } else {
-                    // check that associated photo object is correct size
-                    // assume that if a photo object has correct filepath and size then it is likely right
+                        // check that associated photo object is correct size
+                        // assume that if a photo object has correct filepath and size then it is likely right
 
-                    // if photo is wrong size, then remove filepath from its list
-                    // if its list becomes empty, delete photo object
-                    if (associatedPhoto.bytes != photo.bytes) {
-                        associatedPhoto.fileinfo.removeAll { f -> f.filepath == photo.filepath }
+                        // if photo is wrong size, then remove filepath from its list
+                        // if its list becomes empty, delete photo object
+                        if (associatedPhoto.bytes != photo.bytes) {
+                            associatedPhoto.fileinfo.removeAll { f -> f.filepath == photo.filepath }
+                        }
+                        if (associatedPhoto.fileinfo.isEmpty()) {
+                            associatedPhoto.deleteFromRealm()
+                        }
                     }
-                    if (associatedPhoto.fileinfo.isEmpty()) {
-                        associatedPhoto.deleteFromRealm()
-                    }
+
+                    counter++
+                    progress(counter / photos.size.toDouble() * 100.0)
                 }
 
-                counter++
-                    progress(counter/photos.size.toDouble()*100.0)
+                realm.commitTransaction()
+                realm.close()
+            } catch (e: Exception) {
+                println(e.message)
             }
-
-            realm.commitTransaction()
-            realm.close()
         }
 
-
-        fun compareIndex(jsonObject: JSONObject){
-
-        }
 
     }
 

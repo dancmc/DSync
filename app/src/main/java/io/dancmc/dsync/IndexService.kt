@@ -64,20 +64,22 @@ class IndexService : Service() {
                 if(response.isSuccessful){
                     val body = response.body()
                     val json = JSONObject(body)
-                    println(body)
 
-                    val realm = Realm.getDefaultInstance()
-                    realm.beginTransaction()
-                    val diffs = realm.where(RealmDifference::class.java).findAll()
-                    val ignoredPhone = diffs.filter {it.ignored &&  it.onPhone  }.map { it.uuid }.toHashSet()
-                    val ignoredServer = diffs.filter { it.ignored && it.onServer  }.map { it.uuid }.toHashSet()
-                    val ignoredSync = diffs.filter { it.ignored && it.toSync }.map { it.uuid }.toHashSet()
-                    diffs.deleteAllFromRealm()
-                    realm.commitTransaction()
 
-                    realm.beginTransaction()
                     if(json.optBoolean("success")){
                         updatePullOutcome(true)
+
+                        val realm = Realm.getDefaultInstance()
+                        realm.beginTransaction()
+                        val diffs = realm.where(RealmDifference::class.java).findAll()
+                        val ignoredPhone = diffs.filter {it.ignored &&  it.onPhone  }.map { it.uuid }.toHashSet()
+                        val ignoredServer = diffs.filter { it.ignored && it.onServer  }.map { it.uuid }.toHashSet()
+                        val deleteOffServer = diffs.filter { it.deleteOffServer && it.onServer  }.map { it.uuid }.toHashSet()
+                        val ignoredSync = diffs.filter { it.ignored && it.toSync }.map { it.uuid }.toHashSet()
+                        diffs.deleteAllFromRealm()
+                        realm.commitTransaction()
+
+                        realm.beginTransaction()
 
                         val indexMultiMap = ArrayListValuedHashMap<String, RealmMedia>()
                         var totalToProcess = 0
@@ -134,9 +136,13 @@ class IndexService : Service() {
                                     if(photoID in ignoredServer){
                                         this.ignored = true
                                     }
+                                    if(photoID in deleteOffServer){
+                                        this.deleteOffServer = true
+                                    }
                                     realm.copyToRealm(this)
                                 })
                             }else{
+
                                 // remove from map because matched
                                 indexMultiMap.removeMapping(md5, indexedPhoto)
                                 totalProcessed++
@@ -147,12 +153,12 @@ class IndexService : Service() {
                                     indexedPhoto = realm.copyFromRealm(indexedPhoto)
                                     oldIndexedPhoto.deleteFromRealm()
                                     indexedPhoto.uuid = photoID
-                                    realm.copyToRealm(indexedPhoto!!)
+                                    realm.copyToRealmOrUpdate(indexedPhoto!!)
                                 }
 
                                 // exists on both server and index, compare folders, notes, tags
                                 val indexedFiles = indexedPhoto.fileinfo.map {fi-> fi.filepath }
-                                val intersectedFiles = indexedFiles.intersect(files)
+                                val intersectedFiles = indexedFiles.intersect(files.map { fi->fi.path })
                                 if(indexedPhoto.notesUpdated!=notesUpdated ||
                                         indexedPhoto.tagsUpdated!=tagsUpdated ||
                                         intersectedFiles.size!=files.size ||
@@ -168,7 +174,7 @@ class IndexService : Service() {
                                             this.filepaths.add(f.filepath)
                                         }
                                         if(indexedPhoto.notesUpdated>=notesUpdated && indexedPhoto.tagsUpdated>=tagsUpdated){
-                                            syncUploadOnly = true
+//                                            syncUploadOnly = true
                                         }
                                         if(photoID in ignoredSync){
                                             this.ignored = true
@@ -191,17 +197,21 @@ class IndexService : Service() {
                                     this.folders.add(f.foldername)
                                     this.filepaths.add(f.filepath)
                                 }
+                                if(this.uuid in ignoredPhone){
+                                    this.ignored = true
+                                }
                                 realm.copyToRealm(this)
                             })
                             totalProcessed++
                             updateCompareStatus(totalProcessed, totalToProcess)
                         }
+                        realm.commitTransaction()
+                        success = true
+                        realm.close()
                     } else {
                         updatePullOutcome(false)
                     }
-                    realm.commitTransaction()
-                    success = true
-                    realm.close()
+
 
                 }else {
                     updatePullOutcome(false)

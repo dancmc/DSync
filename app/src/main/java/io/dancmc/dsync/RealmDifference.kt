@@ -22,6 +22,7 @@ open class RealmDifference : RealmObject(){
     // for sync : is complete filepaths on phone
     var filepaths = RealmList<String>()
     var ignored = false
+    var deleteOffServer = false
 
 
 }

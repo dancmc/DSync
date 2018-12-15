@@ -43,6 +43,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        MediaRetrofit.domain = Prefs.instance!!.readString(Prefs.API_URL, "http://192.168.1.47:8080")
+        MediaRetrofit.rebuild()
+
         val menuView = navigation.getChildAt(0) as BottomNavigationMenuView
         for (i in 0 until menuView.childCount) {
             val iconView = menuView.getChildAt(i).findViewById<View>(R.id.icon)

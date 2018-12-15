@@ -1,7 +1,13 @@
 package io.dancmc.dsync
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.realm.Realm
@@ -34,6 +40,7 @@ class BackupSummarySubFragment : BaseSubFragment() {
             return myFragment
         }
 
+        val CHANNEL_DEFAULT_IMPORTANCE = "CHANNEL_DEFAULT_IMPORTANCE"
         val ON_PHONE = "On Phone"
         val ON_SERVER = "On Server"
         val TO_SYNC = "To Sync"
@@ -63,7 +70,11 @@ class BackupSummarySubFragment : BaseSubFragment() {
                 R.id.action_index -> {
                     (parentFragment as? BackupSummaryInterface)?.goToIndex()
                 }
+                R.id.action_backup -> {
 
+                    startService<BackupService>()
+
+                }
             }
             true
         }
