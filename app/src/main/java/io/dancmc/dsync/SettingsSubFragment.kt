@@ -49,7 +49,7 @@ class SettingsSubFragment : BaseSubFragment() {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spinner.adapter = adapter
         }
-        val pos = when(Prefs.instance!!.readString(Prefs.API_URL, "http://192.168.1.47:8080")){
+        val pos = when(Prefs.instance!!.readString(Prefs.API_URL, "https://dancmc.host")){
             "http://192.168.1.47:8080"->0
             "http://192.168.1.20"->1
             "https://dancmc.host"->2
@@ -68,7 +68,7 @@ class SettingsSubFragment : BaseSubFragment() {
                     1-> "http://192.168.1.20"
                     2-> "https://dancmc.host"
                     3-> "https://dancmc.io"
-                    else->"http://192.168.1.47:8080"
+                    else->"https://dancmc.host"
                 }
                 Prefs.instance!!.writeString(Prefs.API_URL,url)
                 MediaRetrofit.domain = url

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -15,6 +16,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.javadocmd.simplelatlng.LatLng
+import com.viven.imagezoom.ImageZoomHelper
 import io.nlopez.smartlocation.OnLocationUpdatedListener
 import io.nlopez.smartlocation.SmartLocation
 import io.realm.Realm
@@ -38,13 +40,16 @@ class MainActivity : AppCompatActivity() {
     private var backStack = ArrayList<String>()
     private var currentFragment = ""
     private var backPressed = false
+    lateinit var imageZoomHelper :ImageZoomHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        MediaRetrofit.domain = Prefs.instance!!.readString(Prefs.API_URL, "http://192.168.1.47:8080")
+        MediaRetrofit.domain = Prefs.instance!!.readString(Prefs.API_URL, "https://dancmc.host")
         MediaRetrofit.rebuild()
+
+        imageZoomHelper = ImageZoomHelper(this)
 
         val menuView = navigation.getChildAt(0) as BottomNavigationMenuView
         for (i in 0 until menuView.childCount) {
@@ -59,8 +64,27 @@ class MainActivity : AppCompatActivity() {
 
         initialiseAndAuthorise(savedInstanceState)
 
+
+
     }
 
+
+    private fun handleAddress(address:String){
+
+        switchFragment(TAG_HOME, true, address)
+
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        when {
+            intent?.action == Intent.ACTION_SEND -> {
+                if ("text/plain" == intent.type) {
+                    handleAddress(intent.getStringExtra(Intent.EXTRA_TEXT))
+                }
+            }
+        }
+    }
 
     // switch to hardcoded backup server in case of failure
     private fun initialiseAndAuthorise(savedInstanceState: Bundle?) {
@@ -70,7 +94,15 @@ class MainActivity : AppCompatActivity() {
             if (savedInstanceState != null) {
                 currentFragment = savedInstanceState.getString("currentFragment")
             } else {
-                switchFragment(TAG_HOME)
+                when {
+                    intent?.action == Intent.ACTION_SEND -> {
+                        if ("text/plain" == intent.type) {
+                            handleAddress(intent.getStringExtra(Intent.EXTRA_TEXT))
+                        }
+                    }
+                    else->switchFragment(TAG_HOME)
+                }
+
             }
 
 //            Utils.updateDetails(this,
@@ -130,10 +162,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Mechanism to switch when tab in BottomNavigationView pressed
-    private fun switchFragment(target: String) {
+    private fun switchFragment(target: String, handleAddress:Boolean = false, address:String = "") {
 
         if (currentFragment == target) {
-            (supportFragmentManager.findFragmentByTag(currentFragment) as BaseMainFragment).clearBackStack()
+            (supportFragmentManager.findFragmentByTag(currentFragment) as? BaseMainFragment)?.clearBackStack()
+            if(handleAddress){
+                (supportFragmentManager.findFragmentByTag(currentFragment) as? HomeMainFragment)?.handleAddress(address)
+            }
         } else {
 
             val manager = supportFragmentManager
@@ -167,7 +202,14 @@ class MainActivity : AppCompatActivity() {
             currentFragment = target
             backPressed = false
 
+            if(handleAddress){
+                transaction.runOnCommit {
+                    (supportFragmentManager.findFragmentByTag(currentFragment) as? HomeMainFragment)?.handleAddress(address)
+                }
+            }
+
             transaction.commit()
+
         }
 
     }
@@ -206,7 +248,7 @@ class MainActivity : AppCompatActivity() {
         outState?.putString("currentFragment", currentFragment)
     }
 
-
-
-
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        return imageZoomHelper.onDispatchTouchEvent(ev) || super.dispatchTouchEvent(ev)
+    }
 }

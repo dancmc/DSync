@@ -91,7 +91,7 @@ class DirectoryListSubFragment : BaseSubFragment() {
 
         // !! onRefresh never triggers if the top view is 0px.........
         layout.subfragment_directorylist_refresh.setOnRefreshListener {
-
+            (parentFragment as? DirectoryListInterface)?.reload()
         }
         layout.subfragment_directorylist_refresh.setColorSchemeResources(android.R.color.holo_green_dark,
                 android.R.color.holo_red_dark,
@@ -109,6 +109,7 @@ class DirectoryListSubFragment : BaseSubFragment() {
         imageDirectoryList.addAll(imageDirectory)
         adapter.notifyDataSetChanged()
         this.photoList = photoList
+        layout.subfragment_directorylist_refresh.isRefreshing = false
     }
 
 
@@ -119,6 +120,8 @@ class DirectoryListSubFragment : BaseSubFragment() {
 
     interface DirectoryListInterface{
         fun directoryClicked(directory:MediaDirectory)
+
+        fun reload()
     }
 
 }

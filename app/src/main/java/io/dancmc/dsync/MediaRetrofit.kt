@@ -13,7 +13,7 @@ class MediaRetrofit {
 
     companion object {
 //        var domain = "dancmc.io"
-        var domain = "http://192.168.1.47:8080"
+        var domain = "https://dancmc.host"
         private var apiUrl = getApiUrl()
 
         private val httpclient = OkHttpClient.Builder()

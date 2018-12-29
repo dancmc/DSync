@@ -20,6 +20,7 @@ open class RealmMedia : RealmObject(){
     var mime = ""
     var isVideo = false
     var dateTaken = 0L
+    var stillExistsOnDevice = false
 
 
 }

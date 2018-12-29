@@ -5,10 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
+import com.viven.imagezoom.ImageZoomHelper
 import io.realm.Realm
 import kotlinx.android.synthetic.main.subfragment_photo_viewer.view.*
+import org.jetbrains.anko.sdk27.coroutines.onClick
 import java.io.File
 import java.util.*
+import androidx.core.content.ContextCompat.startActivity
+import android.content.Intent
+import android.net.Uri
 
 
 class PhotoViewerSubFragment : BaseSubFragment() {
@@ -31,6 +36,7 @@ class PhotoViewerSubFragment : BaseSubFragment() {
     lateinit var layout: View
     lateinit var mediaObj: MediaObj
     lateinit var realm: Realm
+    var distanceBased = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -40,6 +46,7 @@ class PhotoViewerSubFragment : BaseSubFragment() {
         layout = inflater.inflate(R.layout.subfragment_photo_viewer, container, false)
 
 
+        ImageZoomHelper.setViewZoomable(layout.subfragment_photo_viewer_image)
         Glide.with(context!!).load(mediaObj.filepath).into(layout.subfragment_photo_viewer_image)
 
         layout.subfragment_photo_viewer_toolbar.inflateMenu(R.menu.menu_photo_viewer)
@@ -63,11 +70,25 @@ class PhotoViewerSubFragment : BaseSubFragment() {
         layout.subfragment_photo_viewer_folder.text = file.parentFile.name
         layout.subfragment_photo_viewer_filepath.text = file.name
         layout.subfragment_photo_viewer_size.text = "${file.length()} bytes"
+        layout.subfragment_photo_viewer_distance.text = if(distanceBased)mediaObj.distance.toString() else ""
+        layout.subfragment_photo_viewer_distance.onClick {
+            if(distanceBased){
+                val uri = "https://www.google.com/maps/place/" + mediaObj.latitude + "+" + mediaObj.longitude + ""
+                val intent =  Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                startActivity(intent)
+            }
+        }
 
         realm.where(RealmFileInfo::class.java).equalTo("filepath", mediaObj.filepath).findFirst()?.let {
             if (it.photos!=null && it.photos.size > 0) {
                 layout.subfragment_photo_viewer_notes.setText(it.photos[0]!!.notes)
             }
+        }
+
+        layout.subfragment_photo_viewer_toolbar_back.onClick {
+            Utils.hideKeyboardFrom(context!!, layout.subfragment_photo_viewer_notes)
+            (parentFragment as? PhotoViewerInterface)?.savedPhoto()
+
         }
 
 
@@ -139,11 +160,15 @@ class PhotoViewerSubFragment : BaseSubFragment() {
             realm.copyToRealmOrUpdate(realmPhoto)
         }
         realm.commitTransaction()
+
+        Utils.hideKeyboardFrom(context!!, layout.subfragment_photo_viewer_notes)
     }
 
     interface PhotoViewerInterface {
         fun savedPhoto()
     }
+
+
 
 
 }

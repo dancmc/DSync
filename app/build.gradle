@@ -20,6 +20,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
 }
 
 dependencies {
@@ -46,6 +50,6 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
 
 
-
+    compile 'com.github.okaybroda:ImageZoom:1.1.0'
     implementation 'io.nlopez.smartlocation:library:3.3.3'
 }

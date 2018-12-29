@@ -22,6 +22,7 @@ class MyApplication : Application() {
     companion object {
         lateinit var instance: MyApplication
 
+        var location:Location?=null
 
     }
 

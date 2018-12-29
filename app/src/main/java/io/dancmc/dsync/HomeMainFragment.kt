@@ -9,10 +9,12 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
 import io.realm.Realm
-import kotlinx.android.synthetic.main.subfragment_photo_viewer.view.*
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import java.io.File
 import java.util.*
 
 
@@ -34,7 +36,8 @@ class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryL
     var directoryList = ArrayList<MediaDirectory>()
     var photoList = ArrayList<MediaObj>()
     lateinit var layout: View
-    lateinit var realm:Realm
+    lateinit var realm: Realm
+    var loaded = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -62,7 +65,7 @@ class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryL
                 if (permissionsNeeded.size > 0) {
                     requestPermissions(permissionsNeeded.toTypedArray(), 1)
                 } else {
-                        setup()
+                    setup()
 
                 }
             }
@@ -80,6 +83,7 @@ class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryL
             uiThread {
                 val frag = childFragmentManager.findFragmentById(R.id.fragment_overall_container) as? BaseSubFragment
                 frag?.photosLoaded(directoryList, photoList)
+                loaded = true
             }
         }
 
@@ -105,20 +109,53 @@ class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryL
     override fun directoryClicked(directory: MediaDirectory) {
         val tx = manager.beginTransaction()
         val galleryFrag = GallerySubFragment.newInstance()
-        val list = if(directory.albumName=="All") photoList else photoList.filter { it.bucketID == directory.id }
+        val list = if (directory.albumName == "All") photoList else photoList.filter { it.bucketID == directory.id }
         galleryFrag.list = list
         tx.add(R.id.fragment_overall_container, galleryFrag, null)
         tx.addToBackStack(null)
         tx.commit()
     }
 
-    override fun photoClicked(photo: MediaObj) {
+    override fun photoClicked(photo: MediaObj, sort: String) {
         val tx = manager.beginTransaction()
         val photoviewer = PhotoViewerSubFragment.newInstance()
+        photoviewer.distanceBased = sort == GallerySubFragment.SORT_DIST
         photoviewer.mediaObj = photo
         tx.add(R.id.fragment_overall_container, photoviewer, null)
         tx.addToBackStack(null)
         tx.commit()
+    }
+
+    fun handleAddress(address:String) {
+
+        launch(UI){
+            while(!loaded){
+                delay(100)
+            }
+            val count = manager.backStackEntryCount
+            if (count > 0) {
+                manager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            }
+
+            val loc = Utils.getLocationFromAddress(context!!, address)
+
+            loc?.let{ l->
+                val tx = manager.beginTransaction()
+                val galleryFrag = GallerySubFragment.newInstance(GallerySubFragment.SORT_DIST, l.latitude, l.longitude)
+                galleryFrag.list = photoList
+                tx.add(R.id.fragment_overall_container, galleryFrag, null)
+                tx.addToBackStack(null)
+                tx.commit()
+
+            }
+        }
+
+
+
+    }
+
+    override fun reload() {
+        setup()
     }
 
     override fun savedPhoto() {

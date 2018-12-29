@@ -3,6 +3,7 @@ package io.dancmc.dsync
 import android.app.Activity
 import android.content.Context
 import android.database.Cursor
+import android.location.Address
 import android.provider.MediaStore
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -14,6 +15,10 @@ import io.realm.Realm
 import org.json.JSONObject
 import java.io.File
 import java.util.*
+import kotlin.collections.HashMap
+import android.location.Geocoder
+import java.io.IOException
+
 
 class Utils {
 
@@ -94,6 +99,8 @@ class Utils {
             val point2 = LatLng(lat2, long2)
             return LatLngTool.distance(point1, point2, LengthUnit.KILOMETER)
         }
+
+
 
         @JvmStatic
         fun refreshPhotoList(context: Context, directories: ArrayList<MediaDirectory>): ArrayList<MediaObj> {
@@ -207,22 +214,28 @@ class Utils {
 
             var counter = 0
             try {
+
                 realm.beginTransaction()
 
+                val map = HashMap<String, RealmMedia>()
+                realm.where(RealmMedia::class.java).findAll().forEach { rm->
+                    map.put(rm.md5, rm)
+                }
+
                 photos.forEach { photo ->
-                    if(photo.filepath=="/storage/emulated/0/Pictures/Instagram/IMG_20180927_204844_824.jpg"){
-                        println("hm")
-                    }
+
+
                     var fileinfo = realm.where(RealmFileInfo::class.java).equalTo("filepath", photo.filepath).findFirst()
                     val associatedPhoto = fileinfo?.photos?.firstOrNull()
 
-
+                    // if there is no realmmedia object assoc with filepath
                     if (associatedPhoto == null) {
                         val file = File(photo.filepath)
                         val bytes = file.length()
                         val md5 = MD5.calculateMD5(file)
 
                         var realmPhoto = realm.where(RealmMedia::class.java).equalTo("md5", md5).findFirst()
+                        map.remove(md5)
 
                         // new filepath
                         if (fileinfo == null) {
@@ -259,9 +272,12 @@ class Utils {
                         // if its list becomes empty, delete photo object
                         if (associatedPhoto.bytes != photo.bytes) {
                             associatedPhoto.fileinfo.removeAll { f -> f.filepath == photo.filepath }
+                        }else{
+                            map.remove(associatedPhoto.md5)
                         }
                         if (associatedPhoto.fileinfo.isEmpty()) {
                             associatedPhoto.deleteFromRealm()
+                            map.remove(associatedPhoto.md5)
                         }
                     }
 
@@ -269,11 +285,42 @@ class Utils {
                     progress(counter / photos.size.toDouble() * 100.0)
                 }
 
+                map.entries.forEach {e->
+                    e.value.deleteFromRealm()
+                }
+
                 realm.commitTransaction()
+
+
+
                 realm.close()
             } catch (e: Exception) {
                 println(e.message)
             }
+        }
+
+        fun getLocationFromAddress(context: Context, strAddress: String): LatLng? {
+
+            val coder = Geocoder(context)
+            val address: List<Address>?
+            var p1: LatLng? = null
+
+            try {
+                // May throw an IOException
+                address = coder.getFromLocationName(strAddress, 5)
+                if (address == null) {
+                    return null
+                }
+
+                val location = address[0]
+                p1 = LatLng(location.getLatitude(), location.getLongitude())
+
+            } catch (ex: IOException) {
+
+                ex.printStackTrace()
+            }
+
+            return p1
         }
 
 

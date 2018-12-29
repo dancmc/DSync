@@ -95,6 +95,7 @@ class IndexService : Service() {
                         val photos = json.optJSONArray("photos")?: JSONArray()
                         totalToProcess += photos.length()
                         var totalProcessed = 0
+                        var nulls = 0
                         repeat(photos.length()){i->
                             val photo = photos.getJSONObject(i)
                             val photoID = photo.getString("photo_id")
@@ -121,9 +122,11 @@ class IndexService : Service() {
                             updateCompareStatus(totalProcessed, totalToProcess)
 
 
+
                             // compare with indexed files
                             var indexedPhoto = indexMultiMap.get(md5).find { p->p.bytes ==bytes }
                             if(indexedPhoto==null){
+                                nulls++
                                 // exists only on server
                                 onlyOnServer.add(RealmDifference().apply {
                                     this.onServer = true
@@ -186,6 +189,8 @@ class IndexService : Service() {
                             }
 
                         }
+                        println("Nulls : $nulls")
+
 
                         // only on phone
                         indexMultiMap.entries().forEach {
