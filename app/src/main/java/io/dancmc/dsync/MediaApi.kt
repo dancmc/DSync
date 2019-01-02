@@ -144,12 +144,13 @@ object MediaApi {
             photos.forEach {mediaobj->
                 val photoObj = JSONObject()
                 photoObj.put("photo_id", mediaobj.uuid)
+                photoArray.put(photoObj)
 
                 val fileArray = JSONArray()
                 mediaobj.fileinfo.forEach {
                     val fileObj = JSONObject()
                     val file = File(it.filepath)
-                    fileObj.put("folderpath", file.parentFile.name)
+                    fileObj.put("folderpath", file.parentFile.path)
                     fileObj.put("filename", file.name)
                     fileArray.put(fileObj)
                 }

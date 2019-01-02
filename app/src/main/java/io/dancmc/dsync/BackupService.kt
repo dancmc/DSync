@@ -210,8 +210,9 @@ class BackupService : Service() {
                 val metadata = MediaApi.getMetadata(p.uuid).execute()
                 if (metadata.isSuccessful) {
                     realm.beginTransaction()
-                    val metadataJson = JSONObject(metadata.body())
-                    realm.where(RealmMedia::class.java).equalTo("uuid", metadataJson.getString("photo_id")).findFirst()?.let {
+                    val metadataJson = JSONObject(metadata.body()).getJSONObject("photo")
+                    val r = realm.where(RealmMedia::class.java).equalTo("uuid", metadataJson.getString("photo_id")).findFirst()
+                    r?.let {
                         if (it.md5 != metadataJson.getString("md5") || it.bytes != metadataJson.getLong("bytes")) {
                             return@forEach
                         }
@@ -231,11 +232,13 @@ class BackupService : Service() {
                         MediaApi.editMetadata(arrayListOf(it)).execute()
                     }
 
-                    realm.commitTransaction()
+
                 }
 
             } catch (e: Exception) {
-
+                println(e.message)
+            } finally {
+                realm.commitTransaction()
             }
             updateProgress()
         }

@@ -110,6 +110,7 @@ class PhotoViewerSubFragment : BaseSubFragment() {
             rm.notes = layout.subfragment_photo_viewer_notes.text.toString()
             rm.notesUpdated = System.currentTimeMillis()
             realm.commitTransaction()
+            Utils.hideKeyboardFrom(context!!, layout.subfragment_photo_viewer_notes)
         }
 
         // check if filepath already indexed
