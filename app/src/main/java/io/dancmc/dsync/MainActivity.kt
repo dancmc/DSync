@@ -1,31 +1,16 @@
 package io.dancmc.dsync
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
-import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.javadocmd.simplelatlng.LatLng
 import com.viven.imagezoom.ImageZoomHelper
-import io.nlopez.smartlocation.OnLocationUpdatedListener
-import io.nlopez.smartlocation.SmartLocation
-import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.UI
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
-import java.util.ArrayList
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -65,6 +50,15 @@ class MainActivity : AppCompatActivity() {
         initialiseAndAuthorise(savedInstanceState)
 
 
+//        launch {
+//            try {
+//                val b = BufferedOutputStream(DataOutputStream(Socket("10.13.1.110", 7878).getOutputStream()))
+//                b.write("dhkahfndsfnkdabfkaflnlfnlnflnam,f,snf,nafnasf".toByteArray())
+//                b.flush()
+//            } catch (e: Exception) {
+//                println(e.message)
+//            }
+//        }
 
     }
 

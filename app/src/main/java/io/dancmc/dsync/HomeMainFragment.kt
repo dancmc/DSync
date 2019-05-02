@@ -9,10 +9,10 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
 import io.realm.Realm
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.util.*
@@ -118,7 +118,7 @@ class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryL
 
     override fun photoClicked(photo: MediaObj, sort: String) {
         val tx = manager.beginTransaction()
-        val photoviewer = PhotoViewerSubFragment.newInstance()
+        val photoviewer =  PhotoViewerSubFragment.newInstance()
         photoviewer.distanceBased = sort == GallerySubFragment.SORT_DIST
         photoviewer.mediaObj = photo
         tx.add(R.id.fragment_overall_container, photoviewer, null)
@@ -128,7 +128,7 @@ class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryL
 
     fun handleAddress(address:String) {
 
-        launch(UI){
+        GlobalScope.launch(Dispatchers.Main){
             while(!loaded){
                 delay(100)
             }

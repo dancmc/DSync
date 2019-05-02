@@ -34,6 +34,7 @@ class BackupListSubFragment : BaseSubFragment() {
     lateinit var recycler: RecyclerView
     lateinit var adapter: BackupListAdapter
     lateinit var list: List<RealmDifference>
+    var selectAll = false
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -54,7 +55,7 @@ class BackupListSubFragment : BaseSubFragment() {
             BackupSummarySubFragment.TO_SYNC -> diff.filter { it.toSync }
             else -> diff.filter { it.uuid == "1" }
         }
-        Collections.sort(list, compareByDescending({ it.dateTaken }))
+        Collections.sort(list, compareByDescending{ it.dateTaken })
 
         adapter = BackupListAdapter(context!!, type, list,
                 { rd, b ->
@@ -72,6 +73,21 @@ class BackupListSubFragment : BaseSubFragment() {
         recycler.layoutManager = LinearLayoutManager(context)
         recycler.adapter = adapter
 
+
+        if(type == BackupSummarySubFragment.ON_SERVER){
+            // deal with toolbar
+            layout.subfragment_backup_list_toolbar.inflateMenu(R.menu.menu_backup_list_subfragment)
+            layout.subfragment_backup_list_toolbar.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.action_select_all -> {
+                        toggleSelectAll(!selectAll)
+                    }
+                }
+                true
+            }
+        }
+
+
         return layout
 
     }
@@ -80,6 +96,14 @@ class BackupListSubFragment : BaseSubFragment() {
     override fun onDestroy() {
         super.onDestroy()
         realm.close()
+    }
+
+    private fun toggleSelectAll(b:Boolean){
+        realm.beginTransaction()
+        list.forEach { rd-> rd.deleteOffServer = b }
+        realm.commitTransaction()
+        selectAll = b
+        adapter.notifyDataSetChanged()
     }
 
     interface BackupListInterface {

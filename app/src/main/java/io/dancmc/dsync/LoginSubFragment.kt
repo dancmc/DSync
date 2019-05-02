@@ -5,10 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import io.dancmc.dsync.BaseSubFragment
-import io.dancmc.dsync.LoginActivity
-import io.dancmc.dsync.R
-import io.dancmc.dsync.Utils
 import kotlinx.android.synthetic.main.subfragment_login.view.*
 
 

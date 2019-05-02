@@ -11,7 +11,8 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import io.realm.Realm
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
 
@@ -59,7 +60,7 @@ class BackupService : Service() {
             }
 
             startForeground(ONGOING_NOTIFICATION_ID, notificationBuilder.build())
-            launch {
+            GlobalScope.launch {
 
 
                 val notificationManager = NotificationManagerCompat.from(this@BackupService)
@@ -140,7 +141,7 @@ class BackupService : Service() {
                     val metadata = MediaApi.getMetadata(p.uuid).execute()
                     if (metadata.isSuccessful) {
                         val realmMedia = RealmMedia()
-                        val metadataJson = JSONObject(metadata.body())
+                        val metadataJson = JSONObject(metadata.body()).getJSONObject("photo")
                         realmMedia.md5 = metadataJson.getString("md5")
                         realmMedia.bytes = metadataJson.getLong("bytes")
                         realmMedia.mime = metadataJson.getString("mime")
@@ -165,11 +166,15 @@ class BackupService : Service() {
 
                         val response = MediaApi.downloadPhoto(p.uuid, "original").execute()
                         if (response.isSuccessful) {
+
+                            // if we are to write more than one copy of the photo
+                            // write to the first location, then copy from first location to all others
                             val files = realmMedia.fileinfo.map { File(it.filepath) }
                             var firstFileWritten = false
                             files.forEachIndexed { index, file ->
                                 if (!file.exists()) {
-                                    file.mkdirs()
+                                    file.parentFile.mkdirs()
+                                    file.createNewFile()
                                     if (index == 0) {
                                         response.body()?.byteStream()?.use { input ->
                                             file.outputStream().use { fileout ->
@@ -186,6 +191,8 @@ class BackupService : Service() {
                                             }
                                         }
                                     }
+
+                                    SingleMediaScan(this, file)
                                 }
                             }
 

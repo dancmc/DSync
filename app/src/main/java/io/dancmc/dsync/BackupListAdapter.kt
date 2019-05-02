@@ -8,10 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
-import io.realm.RealmResults
 import kotlinx.android.synthetic.main.adapter_backup_list.view.*
-import kotlinx.android.synthetic.main.adapter_backup_summary.view.*
-import kotlinx.android.synthetic.main.adapter_directorylist.view.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import java.io.File
 

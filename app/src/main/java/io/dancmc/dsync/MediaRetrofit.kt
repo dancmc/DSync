@@ -1,7 +1,9 @@
 package io.dancmc.dsync
 
 import android.util.Log
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -29,7 +31,10 @@ class MediaRetrofit {
                             .build()
 
                     Log.d("API", "HTTP REQUEST :" + newRequest.url())
-                    chain.proceed(newRequest)
+                    val response = chain.proceed(newRequest)
+                    Log.d("API", "Response length "+response.body()?.contentLength())
+                    response
+
                 }.build()
 
         private var retrofit = getRetrofit()
@@ -74,6 +79,9 @@ class MediaRetrofit {
 
         @GET("photo/complete")
         fun getComplete(@QueryMap queries:HashMap<String, String>): Call<String>
+
+        @GET("photo/complete")
+        fun getComplete2(@QueryMap queries:HashMap<String, String>): Call<ResponseBody>
 
         @GET("static/photos")
         fun downloadPhoto(@QueryMap queries:HashMap<String, String>): Call<ResponseBody>

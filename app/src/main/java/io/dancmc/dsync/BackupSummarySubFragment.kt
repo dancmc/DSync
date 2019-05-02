@@ -1,28 +1,15 @@
 package io.dancmc.dsync
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Intent
 import android.os.Bundle
-import android.view.*
-import androidx.core.app.NotificationCompat
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.realm.Realm
 import kotlinx.android.synthetic.main.subfragment_backup_summary.view.*
-import kotlinx.android.synthetic.main.subfragment_directorylist.view.*
-import kotlinx.android.synthetic.main.subfragment_index.*
-import kotlinx.android.synthetic.main.subfragment_index.view.*
 import org.jetbrains.anko.support.v4.startService
-import org.jetbrains.anko.toast
-import java.io.File
-import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.*
-import kotlin.math.floor
-import kotlin.math.roundToInt
 
 
 class BackupSummarySubFragment : BaseSubFragment() {
@@ -64,7 +51,7 @@ class BackupSummarySubFragment : BaseSubFragment() {
 
 
         // deal with toolbar
-        layout.subfragment_backup_summary_toolbar.inflateMenu(R.menu.menu_index_subfragment)
+        layout.subfragment_backup_summary_toolbar.inflateMenu(R.menu.menu_backup_summary_subfragment)
         layout.subfragment_backup_summary_toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_index -> {

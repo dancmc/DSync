@@ -6,13 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.javadocmd.simplelatlng.LatLng
 import io.nlopez.smartlocation.SmartLocation
 import io.realm.Realm
-import kotlinx.android.synthetic.main.subfragment_backup_summary.view.*
 import kotlinx.android.synthetic.main.subfragment_gallery.view.*
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.startService
 import org.jetbrains.anko.uiThread
 
 

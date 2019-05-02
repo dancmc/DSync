@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.adapter_directorylist.view.*
 import kotlinx.android.synthetic.main.adapter_gallery_item_grid.view.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 

@@ -50,7 +50,7 @@ class SettingsSubFragment : BaseSubFragment() {
             spinner.adapter = adapter
         }
         val pos = when(Prefs.instance!!.readString(Prefs.API_URL, "https://dancmc.host")){
-            "http://192.168.1.47:8080"->0
+            "http://192.168.1.3:8080"->0
             "http://192.168.1.20"->1
             "https://dancmc.host"->2
             "https://dancmc.io"->3
@@ -64,7 +64,7 @@ class SettingsSubFragment : BaseSubFragment() {
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val url = when(position){
-                    0-> "http://192.168.1.47:8080"
+                    0-> "http://192.168.1.3:8080"
                     1-> "http://192.168.1.20"
                     2-> "https://dancmc.host"
                     3-> "https://dancmc.io"

@@ -13,7 +13,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
-import java.util.HashMap
+import java.util.*
 
 object MediaApi {
 
@@ -107,6 +107,13 @@ object MediaApi {
         queryMap["deleted"] = deleted.toString()
 
         return MediaRetrofit.api.getComplete(queryMap)
+    }
+
+    fun getComplete2(deleted:Boolean=false): Call<ResponseBody> {
+        val queryMap = HashMap<String, String>()
+        queryMap["deleted"] = deleted.toString()
+
+        return MediaRetrofit.api.getComplete2(queryMap)
     }
 
     fun downloadPhoto(uuid:String, size:String): Call<ResponseBody> {

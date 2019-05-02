@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.database.Cursor
 import android.location.Address
+import android.location.Geocoder
 import android.provider.MediaStore
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -14,10 +15,9 @@ import io.nlopez.smartlocation.SmartLocation
 import io.realm.Realm
 import org.json.JSONObject
 import java.io.File
+import java.io.IOException
 import java.util.*
 import kotlin.collections.HashMap
-import android.location.Geocoder
-import java.io.IOException
 
 
 class Utils {
@@ -276,8 +276,8 @@ class Utils {
                             map.remove(associatedPhoto.md5)
                         }
                         if (associatedPhoto.fileinfo.isEmpty()) {
-                            associatedPhoto.deleteFromRealm()
                             map.remove(associatedPhoto.md5)
+                            associatedPhoto.deleteFromRealm()
                         }
                     }
 
@@ -313,7 +313,7 @@ class Utils {
                 }
 
                 val location = address[0]
-                p1 = LatLng(location.getLatitude(), location.getLongitude())
+                p1 = LatLng(location.latitude, location.longitude)
 
             } catch (ex: IOException) {
 
@@ -321,6 +321,12 @@ class Utils {
             }
 
             return p1
+        }
+
+        const val dayInMs = 24*60*60*1000
+
+        fun isRecentEnough():Boolean{
+            return System.currentTimeMillis() - Prefs.instance!!.readLong(Prefs.INDEX_LAST_UPDATED, 0)< dayInMs
         }
 
 

@@ -9,16 +9,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
-import org.jetbrains.anko.support.v4.startService
 import org.jetbrains.anko.toast
-import org.json.JSONObject
 
 
 class BackupMainFragment : BaseMainFragment(), BackupSummarySubFragment.BackupSummaryInterface, IndexSubFragment.IndexInterface {
 
     companion object {
 
-        val dayInMs = 24*60*60*1000
+
 
         fun newInstance(): BackupMainFragment {
             val myFragment = BackupMainFragment()
@@ -83,12 +81,12 @@ class BackupMainFragment : BaseMainFragment(), BackupSummarySubFragment.BackupSu
             manager = childFragmentManager
             val tx = manager.beginTransaction()
 
-            if(System.currentTimeMillis() - Prefs.instance!!.readLong(Prefs.INDEX_LAST_UPDATED, 0)> dayInMs){
-                val indexFrag = IndexSubFragment.newInstance()
-                tx.add(R.id.fragment_overall_container, indexFrag, null)
-            }else {
+            if(Utils.isRecentEnough()){
                 val backupFrag = BackupSummarySubFragment.newInstance()
                 tx.add(R.id.fragment_overall_container, backupFrag, null)
+            }else {
+                val indexFrag = IndexSubFragment.newInstance()
+                tx.add(R.id.fragment_overall_container, indexFrag, null)
             }
 
             tx.commit()

@@ -5,8 +5,8 @@
 
 
     <item
-        android:id="@+id/action_index"
-        android:title="Index"
+        android:id="@+id/action_select_all"
+        android:title="Select All"
         app:showAsAction="always"/>
 
 

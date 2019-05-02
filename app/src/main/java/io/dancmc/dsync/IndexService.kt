@@ -3,15 +3,13 @@ package io.dancmc.dsync
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.*
-import android.widget.Toast
+import android.os.Handler
+import android.os.IBinder
+import android.os.Message
+import android.os.Messenger
 import io.realm.Realm
-import io.realm.annotations.Index
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
-import org.apache.commons.collections4.MultiMap
-import org.apache.commons.collections4.MultiValuedMap
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap
 import org.json.JSONArray
 import org.json.JSONObject
@@ -52,7 +50,7 @@ class IndexService : Service() {
 
         if(!running) {
             running = true
-            launch {
+            GlobalScope.launch {
 
                 var success = false
                 Utils.indexPhotos(applicationContext) { d ->
@@ -62,6 +60,7 @@ class IndexService : Service() {
 
                 val response = MediaApi.getComplete().execute()
                 if(response.isSuccessful){
+
                     val body = response.body()
                     val json = JSONObject(body)
 
