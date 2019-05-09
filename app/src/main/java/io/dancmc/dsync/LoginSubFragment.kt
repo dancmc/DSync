@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import kotlinx.android.synthetic.main.subfragment_login.view.*
+import kotlinx.android.synthetic.main.subfragment_settings.view.*
+import org.jetbrains.anko.sdk27.coroutines.onClick
 
 
 class LoginSubFragment: BaseSubFragment(){
@@ -35,6 +37,9 @@ class LoginSubFragment: BaseSubFragment(){
             }
             return@setOnEditorActionListener false
         }
+
+        val spinner = layout.spinner_login
+        Utils.createServerSpinnerAdapter(context, spinner)
 
 
         layout.button_login.setOnClickListener {

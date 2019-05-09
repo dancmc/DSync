@@ -3,12 +3,10 @@ package io.dancmc.dsync
 import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
-import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.viven.imagezoom.ImageZoomHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
@@ -25,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     private var backStack = ArrayList<String>()
     private var currentFragment = ""
     private var backPressed = false
-    lateinit var imageZoomHelper :ImageZoomHelper
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +32,6 @@ class MainActivity : AppCompatActivity() {
         MediaRetrofit.domain = Prefs.instance!!.readString(Prefs.API_URL, "https://dancmc.host")
         MediaRetrofit.rebuild()
 
-        imageZoomHelper = ImageZoomHelper(this)
 
         val menuView = navigation.getChildAt(0) as BottomNavigationMenuView
         for (i in 0 until menuView.childCount) {
@@ -242,7 +239,5 @@ class MainActivity : AppCompatActivity() {
         outState?.putString("currentFragment", currentFragment)
     }
 
-    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        return imageZoomHelper.onDispatchTouchEvent(ev) || super.dispatchTouchEvent(ev)
-    }
+
 }

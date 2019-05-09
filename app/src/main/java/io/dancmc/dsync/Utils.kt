@@ -1,5 +1,6 @@
 package io.dancmc.dsync
 
+import android.R
 import android.app.Activity
 import android.content.Context
 import android.database.Cursor
@@ -8,6 +9,9 @@ import android.location.Geocoder
 import android.provider.MediaStore
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import com.javadocmd.simplelatlng.LatLng
 import com.javadocmd.simplelatlng.LatLngTool
 import com.javadocmd.simplelatlng.util.LengthUnit
@@ -327,6 +331,49 @@ class Utils {
 
         fun isRecentEnough():Boolean{
             return System.currentTimeMillis() - Prefs.instance!!.readLong(Prefs.INDEX_LAST_UPDATED, 0)< dayInMs
+        }
+
+        fun createServerSpinnerAdapter(context:Context?, spinner:Spinner){
+            ArrayAdapter(context, R.layout.simple_spinner_item,
+                    arrayOf("Macbook",
+                            "Raspberry Home",
+                            "Raspberry Away",
+                            "Desktop",
+                            "Scaleway")
+            ).also { adapter ->
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                spinner.adapter = adapter
+            }
+            val pos = when(Prefs.instance!!.readString(Prefs.API_URL, "https://dancmc.host")){
+                "http://192.168.1.3:8080"->0
+                "http://192.168.1.20"->1
+                "https://dancmc.host"->2
+                "http://192.168.1.15:8080"->3
+                "https://dancmc.io"->4
+                else ->0
+            }
+            spinner.setSelection(pos)
+            spinner.onItemSelectedListener= object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+
+                }
+
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    val url = when(position){
+                        0-> "http://192.168.1.3:8080"
+                        1-> "http://192.168.1.20"
+                        2-> "https://dancmc.host"
+                        3->"http://192.168.1.15:8080"
+                        4-> "https://dancmc.io"
+                        else->"https://dancmc.host"
+                    }
+                    Prefs.instance!!.writeString(Prefs.API_URL,url)
+                    MediaRetrofit.domain = url
+                    MediaRetrofit.rebuild()
+                }
+
+
+            }
         }
 
 

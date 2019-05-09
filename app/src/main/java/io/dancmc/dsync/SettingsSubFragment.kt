@@ -40,43 +40,7 @@ class SettingsSubFragment : BaseSubFragment() {
 
 
         val spinner = layout.subfragment_settings_address_spinner
-        ArrayAdapter(context, android.R.layout.simple_spinner_item,
-                arrayOf("Macbook",
-                        "Raspberry Home",
-                        "Raspberry Away",
-                        "Scaleway")
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            spinner.adapter = adapter
-        }
-        val pos = when(Prefs.instance!!.readString(Prefs.API_URL, "https://dancmc.host")){
-            "http://192.168.1.3:8080"->0
-            "http://192.168.1.20"->1
-            "https://dancmc.host"->2
-            "https://dancmc.io"->3
-            else ->0
-        }
-        spinner.setSelection(pos)
-        spinner.onItemSelectedListener= object :AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val url = when(position){
-                    0-> "http://192.168.1.3:8080"
-                    1-> "http://192.168.1.20"
-                    2-> "https://dancmc.host"
-                    3-> "https://dancmc.io"
-                    else->"https://dancmc.host"
-                }
-                Prefs.instance!!.writeString(Prefs.API_URL,url)
-                MediaRetrofit.domain = url
-                MediaRetrofit.rebuild()
-            }
-
-
-        }
+        Utils.createServerSpinnerAdapter(context, spinner)
 
         layout.subfragment_settings_logout.onClick { (activity as? MainActivity)?.logout() }
 

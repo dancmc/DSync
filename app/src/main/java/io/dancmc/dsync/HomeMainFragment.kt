@@ -18,7 +18,7 @@ import org.jetbrains.anko.uiThread
 import java.util.*
 
 
-class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryListInterface, GallerySubFragment.GalleryInterface, PhotoViewerSubFragment.PhotoViewerInterface {
+class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryListInterface, GallerySubFragment.GalleryInterface, PhotoViewerSubFragment.PhotoViewerInterface,PhotoZoomSubFragment.PhotoZoomInterface {
 
     companion object {
 
@@ -122,6 +122,21 @@ class HomeMainFragment : BaseMainFragment(), DirectoryListSubFragment.DirectoryL
         photoviewer.distanceBased = sort == GallerySubFragment.SORT_DIST
         photoviewer.mediaObj = photo
         tx.add(R.id.fragment_overall_container, photoviewer, null)
+        tx.addToBackStack(null)
+        tx.commit()
+    }
+
+    override fun goBack() {
+        val tx = manager.beginTransaction()
+        childFragmentManager.popBackStackImmediate()
+        tx.commit()
+    }
+
+    override fun goToZoom(filepath:String) {
+        val tx = manager.beginTransaction()
+        val photoZoom =  PhotoZoomSubFragment.newInstance()
+        photoZoom.filepath = filepath
+        tx.add(R.id.fragment_overall_container, photoZoom, null)
         tx.addToBackStack(null)
         tx.commit()
     }

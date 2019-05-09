@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
-import com.viven.imagezoom.ImageZoomHelper
 import io.realm.Realm
 import kotlinx.android.synthetic.main.subfragment_photo_viewer.view.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
@@ -45,8 +44,12 @@ class PhotoViewerSubFragment : BaseSubFragment() {
         layout = inflater.inflate(R.layout.subfragment_photo_viewer, container, false)
 
 
-        ImageZoomHelper.setViewZoomable(layout.subfragment_photo_viewer_image)
+
         Glide.with(context!!).load(mediaObj.filepath).into(layout.subfragment_photo_viewer_image)
+        layout.subfragment_photo_viewer_image.onClick {
+            (parentFragment as? PhotoViewerInterface)?.goToZoom(mediaObj.filepath)
+        }
+
 
         layout.subfragment_photo_viewer_toolbar.inflateMenu(R.menu.menu_photo_viewer)
         layout.subfragment_photo_viewer_toolbar.setOnMenuItemClickListener {
@@ -166,6 +169,7 @@ class PhotoViewerSubFragment : BaseSubFragment() {
 
     interface PhotoViewerInterface {
         fun savedPhoto()
+        fun goToZoom(filepath:String)
     }
 
 
