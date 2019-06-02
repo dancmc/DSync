@@ -35,6 +35,8 @@ class IndexSubFragment : BaseSubFragment(), IndexServiceComm {
 
     lateinit var layout: View
     lateinit var realm: Realm
+    var total = 1
+    var current = 1
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -70,8 +72,16 @@ class IndexSubFragment : BaseSubFragment(), IndexServiceComm {
 
     override fun messageReceived(message: Int, obj: Any?) {
         when(message){
-            IndexService.INDEX_PERCENT->{
-                val progress = floor(obj as Double).roundToInt()
+
+            IndexService.INDEX_TOTAL->{
+                total = obj as Int
+                current = 0
+            }
+
+            IndexService.INDEX_INCREMENT->{
+                current++
+//                println("$current/$total")
+                val progress = floor(current/total.toDouble()*100.0).roundToInt()
                 layout.subfragment_index_progress_index.progress =progress
                 layout.subfragment_index_progress_index_percent.text = "$progress%"
             }

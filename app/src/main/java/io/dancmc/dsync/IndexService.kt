@@ -26,11 +26,12 @@ class IndexService : Service() {
         val MSG_UNREGISTER_CLIENT = 2
         val PING_SERVICE = 3
         val PING_RUNNING = 4
-        val INDEX_PERCENT = 5
-        val INDEX_FINISHED = 6
-        val PULL_SUCCESS = 7
-        val PULL_FAILURE = 8
-        val COMPARE_PERCENT = 9
+        val INDEX_INCREMENT = 5
+        val INDEX_TOTAL = 6
+        val INDEX_FINISHED = 7
+        val PULL_SUCCESS = 8
+        val PULL_FAILURE = 9
+        val COMPARE_PERCENT = 10
     }
 
 
@@ -53,14 +54,19 @@ class IndexService : Service() {
             GlobalScope.launch {
 
                 var success = false
-                Utils.indexPhotos(applicationContext) { d ->
-                    clients.forEach { m -> m.send(Message.obtain(null, INDEX_PERCENT, d)) }
-                }
+                Utils.indexPhotos(applicationContext,
+                        sendTotal = {total->
+                            clients.forEach { m-> m.send(Message.obtain(null, INDEX_TOTAL, total)) }
+                        },
+                        sendIncrement = {
+                            clients.forEach { m -> m.send(Message.obtain(null, INDEX_INCREMENT, null)) }
+                        }
+                )
 
 
                 val response = MediaApi.getComplete().execute()
                 if(response.isSuccessful){
-
+                    updatePullOutcome(true)
                     val body = response.body()
                     val json = JSONObject(body)
 

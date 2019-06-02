@@ -17,11 +17,19 @@ import com.javadocmd.simplelatlng.LatLngTool
 import com.javadocmd.simplelatlng.util.LengthUnit
 import io.nlopez.smartlocation.SmartLocation
 import io.realm.Realm
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 
 class Utils {
@@ -103,7 +111,6 @@ class Utils {
             val point2 = LatLng(lat2, long2)
             return LatLngTool.distance(point1, point2, LengthUnit.KILOMETER)
         }
-
 
 
         @JvmStatic
@@ -212,95 +219,123 @@ class Utils {
         }
 
         @JvmStatic
-        fun indexPhotos(context: Context, progress: (Double) -> Unit) {
+        fun indexPhotos(context: Context, sendTotal: (Int) -> Unit, sendIncrement: () -> Unit) {
             val photos = refreshPhotoList(context, getMediaDirectories(context))
+
+            sendTotal(photos.size)
+
             val realm = Realm.getDefaultInstance()
+            val map = HashMap<String, RealmMedia>()
 
-            var counter = 0
-            try {
+            realm.where(RealmMedia::class.java).findAll().forEach { rm ->
+                map.put(rm.md5, rm)
+            }
 
-                realm.beginTransaction()
-
-                val map = HashMap<String, RealmMedia>()
-                realm.where(RealmMedia::class.java).findAll().forEach { rm->
-                    map.put(rm.md5, rm)
-                }
-
-                photos.forEach { photo ->
-
-
-                    var fileinfo = realm.where(RealmFileInfo::class.java).equalTo("filepath", photo.filepath).findFirst()
-                    val associatedPhoto = fileinfo?.photos?.firstOrNull()
-
-                    // if there is no realmmedia object assoc with filepath
-                    if (associatedPhoto == null) {
-                        val file = File(photo.filepath)
-                        val bytes = file.length()
-                        val md5 = MD5.calculateMD5(file)
-
-                        var realmPhoto = realm.where(RealmMedia::class.java).equalTo("md5", md5).findFirst()
-                        map.remove(md5)
-
-                        // new filepath
-                        if (fileinfo == null) {
-                            fileinfo = RealmFileInfo().apply {
-                                this.filepath = photo.filepath
-                                this.foldername = file.parentFile.name
-                            }
-                        }
-
-                        // Photo already exists in database, just need to add new filepath
-                        if (realmPhoto != null && realmPhoto.bytes == bytes) {
-                            realmPhoto.fileinfo.add(fileinfo)
-                            if (realmPhoto.dateTaken > photo.dateTaken) {
-                                realmPhoto.dateTaken = photo.dateTaken
-                            }
-                        } else {
-                            realmPhoto = RealmMedia()
-                            realmPhoto.uuid = UUID.randomUUID().toString()
-                            realmPhoto.md5 = md5
-                            realmPhoto.bytes = bytes
-                            realmPhoto.fileinfo.add(fileinfo)
-                            realmPhoto.latitude = photo.latitude
-                            realmPhoto.longitude = photo.longitude
-                            realmPhoto.mime = photo.mime
-                            realmPhoto.isVideo = photo.isVideo
-                            realmPhoto.dateTaken = photo.dateTaken
-                            realm.copyToRealm(realmPhoto)
-                        }
-                    } else {
-                        // check that associated photo object is correct size
-                        // assume that if a photo object has correct filepath and size then it is likely right
-
-                        // if photo is wrong size, then remove filepath from its list
-                        // if its list becomes empty, delete photo object
-                        if (associatedPhoto.bytes != photo.bytes) {
-                            associatedPhoto.fileinfo.removeAll { f -> f.filepath == photo.filepath }
-                        }else{
-                            map.remove(associatedPhoto.md5)
-                        }
-                        if (associatedPhoto.fileinfo.isEmpty()) {
-                            map.remove(associatedPhoto.md5)
-                            associatedPhoto.deleteFromRealm()
-                        }
+            // only useful if trying to multithread, but no time savings observed due to IO choke
+            val splitSize = ceil(photos.size / 4.0).toInt()
+            val photosSplit = (0..3)
+                    .mapTo(ArrayList()) { i ->
+                        val start = i * splitSize
+                        val end = min(i * splitSize +splitSize, photos.size)
+                        println("$start, $end")
+                        photos.subList(start, end)
                     }
 
-                    counter++
-                    progress(counter / photos.size.toDouble() * 100.0)
+
+            fun indexPhotoJob(photoList: List<MediaObj>) {
+                try {
+                    val realm2 = Realm.getDefaultInstance()
+                    realm2.beginTransaction()
+
+                    photoList.forEach { photo ->
+
+
+                        var fileinfo = realm2.where(RealmFileInfo::class.java).equalTo("filepath", photo.filepath).findFirst()
+                        val associatedPhoto = fileinfo?.photos?.firstOrNull()
+
+                        // if there is no realmmedia object assoc with filepath
+                        if (associatedPhoto == null) {
+                            val file = File(photo.filepath)
+                            val bytes = file.length()
+                            val md5 = MD5.calculateMD5(file)
+
+                            var realmPhoto = realm2.where(RealmMedia::class.java).equalTo("md5", md5).findFirst()
+                            map.remove(md5)
+
+                            // new filepath
+                            if (fileinfo == null) {
+                                fileinfo = RealmFileInfo().apply {
+                                    this.filepath = photo.filepath
+                                    this.foldername = file.parentFile.name
+                                }
+                            }
+
+                            // Photo already exists in database, just need to add new filepath
+                            if (realmPhoto != null && realmPhoto.bytes == bytes) {
+                                realmPhoto.fileinfo.add(fileinfo)
+                                if (realmPhoto.dateTaken > photo.dateTaken) {
+                                    realmPhoto.dateTaken = photo.dateTaken
+                                }
+                            } else {
+                                realmPhoto = RealmMedia()
+                                realmPhoto.uuid = UUID.randomUUID().toString()
+                                realmPhoto.md5 = md5
+                                realmPhoto.bytes = bytes
+                                realmPhoto.fileinfo.add(fileinfo)
+                                realmPhoto.latitude = photo.latitude
+                                realmPhoto.longitude = photo.longitude
+                                realmPhoto.mime = photo.mime
+                                realmPhoto.isVideo = photo.isVideo
+                                realmPhoto.dateTaken = photo.dateTaken
+                                realm2.copyToRealm(realmPhoto)
+                            }
+                        } else {
+                            // check that associated photo object is correct size
+                            // assume that if a photo object has correct filepath and size then it is likely right
+
+                            // if photo is wrong size, then remove filepath from its list
+                            // if its list becomes empty, delete photo object
+                            if (associatedPhoto.bytes != photo.bytes) {
+                                associatedPhoto.fileinfo.removeAll { f -> f.filepath == photo.filepath }
+                            } else {
+                                map.remove(associatedPhoto.md5)
+                            }
+                            if (associatedPhoto.fileinfo.isEmpty()) {
+                                map.remove(associatedPhoto.md5)
+                                associatedPhoto.deleteFromRealm()
+                            }
+                        }
+
+                        sendIncrement()
+                    }
+
+                    realm2.commitTransaction()
+
+
+                    realm2.close()
+                } catch (e: Exception) {
+                    println(e.message)
                 }
-
-                map.entries.forEach {e->
-                    e.value.deleteFromRealm()
-                }
-
-                realm.commitTransaction()
-
-
-
-                realm.close()
-            } catch (e: Exception) {
-                println(e.message)
             }
+
+            // IO is limiting factor so no point
+//            runBlocking {
+//                            photosSplit.map {photoJob->
+//                    async {  indexPhotoJob(photoJob)}
+//                }.forEach { it.await() }
+//            }
+
+            indexPhotoJob(photos)
+
+
+            realm.beginTransaction()
+            map.entries.forEach { e ->
+                e.value.deleteFromRealm()
+            }
+            realm.commitTransaction()
+            realm.close()
+
+
         }
 
         fun getLocationFromAddress(context: Context, strAddress: String): LatLng? {
@@ -327,13 +362,13 @@ class Utils {
             return p1
         }
 
-        const val dayInMs = 24*60*60*1000
+        const val dayInMs = 24 * 60 * 60 * 1000
 
-        fun isRecentEnough():Boolean{
-            return System.currentTimeMillis() - Prefs.instance!!.readLong(Prefs.INDEX_LAST_UPDATED, 0)< dayInMs
+        fun isRecentEnough(): Boolean {
+            return System.currentTimeMillis() - Prefs.instance!!.readLong(Prefs.INDEX_LAST_UPDATED, 0) < dayInMs
         }
 
-        fun createServerSpinnerAdapter(context:Context?, spinner:Spinner){
+        fun createServerSpinnerAdapter(context: Context?, spinner: Spinner) {
             ArrayAdapter(context, R.layout.simple_spinner_item,
                     arrayOf("Macbook",
                             "Raspberry Home",
@@ -344,30 +379,30 @@ class Utils {
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 spinner.adapter = adapter
             }
-            val pos = when(Prefs.instance!!.readString(Prefs.API_URL, "https://dancmc.host")){
-                "http://192.168.1.3:8080"->0
-                "http://192.168.1.20"->1
-                "https://dancmc.host"->2
-                "http://192.168.1.15:8080"->3
-                "https://dancmc.io"->4
-                else ->0
+            val pos = when (Prefs.instance!!.readString(Prefs.API_URL, "https://dancmc.host")) {
+                "http://192.168.1.3:8080" -> 0
+                "http://192.168.1.20" -> 1
+                "https://dancmc.host" -> 2
+                "http://192.168.1.15:8080" -> 3
+                "https://dancmc.io" -> 4
+                else -> 0
             }
             spinner.setSelection(pos)
-            spinner.onItemSelectedListener= object : AdapterView.OnItemSelectedListener {
+            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) {
 
                 }
 
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    val url = when(position){
-                        0-> "http://192.168.1.3:8080"
-                        1-> "http://192.168.1.20"
-                        2-> "https://dancmc.host"
-                        3->"http://192.168.1.15:8080"
-                        4-> "https://dancmc.io"
-                        else->"https://dancmc.host"
+                    val url = when (position) {
+                        0 -> "http://192.168.1.3:8080"
+                        1 -> "http://192.168.1.20"
+                        2 -> "https://dancmc.host"
+                        3 -> "http://192.168.1.15:8080"
+                        4 -> "https://dancmc.io"
+                        else -> "https://dancmc.host"
                     }
-                    Prefs.instance!!.writeString(Prefs.API_URL,url)
+                    Prefs.instance!!.writeString(Prefs.API_URL, url)
                     MediaRetrofit.domain = url
                     MediaRetrofit.rebuild()
                 }
